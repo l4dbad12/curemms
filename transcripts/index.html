@@ -105,26 +105,20 @@
             loading.style.display = 'none';
             error.style.display = 'block';
         } else {
-            fetch(url)
-                .then(res => {
-                    if (!res.ok) throw new Error('Failed to fetch');
-                    return res.text();
-                })
-                .then(html => {
-                    loading.style.display = 'none';
-                    viewer.style.display = 'block';
-                    const blob = new Blob([html], { type: 'text/html' });
-                    viewer.src = URL.createObjectURL(blob);
-                })
-                .catch(() => {
-                    loading.style.display = 'none';
-                    error.style.display = 'block';
-                    error.innerHTML = `
-                        <h2>❌ Failed to Load Transcript</h2>
-                        <p>The transcript link may have expired or is inaccessible.</p>
-                        <p style="margin-top:10px;"><a href="${url}" style="color:#a855f7;" target="_blank">Try opening the raw file directly</a></p>
-                    `;
-                });
+            // Redirect directly to the Discord CDN URL — let browser load it natively
+            loading.style.display = 'none';
+            viewer.style.display = 'block';
+            viewer.src = url;
+            viewer.onload = () => { loading.style.display = 'none'; };
+            viewer.onerror = () => {
+                viewer.style.display = 'none';
+                error.style.display = 'block';
+                error.innerHTML = `
+                    <h2>❌ Failed to Load Transcript</h2>
+                    <p>The transcript link may have expired or is inaccessible.</p>
+                    <p style="margin-top:10px;"><a href="${url}" style="color:#a855f7;" target="_blank">Try opening the raw file directly</a></p>
+                `;
+            };
         }
     </script>
 </body>
