@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cure's MM Service - Transcript Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            color: #a855f7;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+        .loading .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #333;
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ff4444;
+        }
+        .error h2 { margin-bottom: 10px; }
+        .error p { color: #aaa; font-size: 0.9rem; }
+        iframe {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #333;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 Transcript Viewer</h1>
+            <p>Cure's MM Service — Staff Transcript Portal</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading transcript...</p>
+        </div>
+
+        <div class="error" id="error" style="display:none;">
+            <h2>❌ No Transcript Found</h2>
+            <p>No transcript URL was provided, or the link has expired.</p>
+        </div>
+
+        <iframe id="viewer" style="display:none;" sandbox="allow-same-origin allow-scripts"></iframe>
+
+        <div class="footer">Cure's MM Service &copy; 2025</div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get('url');
+
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const viewer = document.getElementById('viewer');
+
+        if (!url) {
+            loading.style.display = 'none';
+            error.style.display = 'block';
+        } else {
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to fetch');
+                    return res.text();
+                })
+                .then(html => {
+                    loading.style.display = 'none';
+                    viewer.style.display = 'block';
+                    const blob = new Blob([html], { type: 'text/html' });
+                    viewer.src = URL.createObjectURL(blob);
+                })
+                .catch(() => {
+                    loading.style.display = 'none';
+                    error.style.display = 'block';
+                    error.innerHTML = `
+                        <h2>❌ Failed to Load Transcript</h2>
+                        <p>The transcript link may have expired or is inaccessible.</p>
+                        <p style="margin-top:10px;"><a href="${url}" style="color:#a855f7;" target="_blank">Try opening the raw file directly</a></p>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>
